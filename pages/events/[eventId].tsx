@@ -7,6 +7,7 @@ import { EventSummary } from '../../components/event-detail/event-summary';
 import { ErrorAlert } from '../../components/ui/error-alert';
 import { getEventById, getFeaturedEvents } from '../../helpers/api-util';
 import { Event } from '../../hooks/dummy-data';
+import { Comments } from '../../components/input/comments';
 
 type Props = {
   params: {
@@ -48,6 +49,7 @@ const EventDetailPage = (props: Props) => {
       <EventContent>
         <p>{event.description}</p>
       </EventContent>
+      <Comments eventId={event.id} />
     </>
   );
 };
