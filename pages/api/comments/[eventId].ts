@@ -33,7 +33,8 @@ export default function handler(req: EventIdRequest, res: EventIdResponse) {
       };
       console.log(newComment);
 
-      res.status(201).json({ message: 'Added comment.' });
+      res.status(201).json({ message: 'Added comment.', newComment });
+      return;
     case 'GET':
       const dummyList = [
         { id: 'c1', name: 'Max', text: 'A first comment!' },
@@ -41,7 +42,9 @@ export default function handler(req: EventIdRequest, res: EventIdResponse) {
       ];
 
       res.status(200).json({ comments: dummyList });
+      return;
     default:
-      res.status(200).json({ message: 'Invalid' });
+      res.status(400).json({ message: 'Invalid' });
+      return;
   }
 }
