@@ -1,5 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
+import { MongoClient } from 'mongodb';
+
 interface EventIdRequest extends NextApiRequest {
   query: {
     eventId?: string;
@@ -13,8 +15,15 @@ interface EventIdRequest extends NextApiRequest {
 
 interface EventIdResponse extends NextApiResponse {}
 
-export default function handler(req: EventIdRequest, res: EventIdResponse) {
+const handler = async (req: EventIdRequest, res: EventIdResponse) => {
   const eventId = req.query.eventId;
+  if (eventId === undefined) {
+    res.status(400).json({ message: 'Invalid' });
+    return;
+  }
+
+  const url = 'mongodb+srv://onioni:ZkNmGsQnuNBWxH2x@cluster0.oxcpg.mongodb.net/events?retryWrites=true&w=majority';
+  const client = await MongoClient.connect(url);
 
   switch (req.method) {
     case 'POST':
@@ -25,13 +34,18 @@ export default function handler(req: EventIdRequest, res: EventIdResponse) {
         return;
       }
 
-      const newComment = {
-        id: new Date().toISOString(),
+      const newComment: CommentData = {
+        evnetId: eventId,
         email,
         name,
         text,
       };
-      console.log(newComment);
+
+      const db = client.db();
+      const result = await db.collection('comments').insertOne(newComment);
+
+      newComment.id = result.insertedId.toString();
+      console.log(result);
 
       res.status(201).json({ message: 'Added comment.', newComment });
       return;
@@ -47,4 +61,8 @@ export default function handler(req: EventIdRequest, res: EventIdResponse) {
       res.status(400).json({ message: 'Invalid' });
       return;
   }
-}
+
+  client.close();
+};
+
+export default handler;

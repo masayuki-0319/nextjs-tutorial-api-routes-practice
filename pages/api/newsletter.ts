@@ -18,7 +18,7 @@ const handler = async (req: NewsletterRequest, res: NextApiResponse) => {
     }
 
     const url =
-      'mongodb+srv://onioni:ZkNmGsQnuNBWxH2x@cluster0.oxcpg.mongodb.net/myFirstDatabase?retryWrites=true&w=majority';
+      'mongodb+srv://onioni:ZkNmGsQnuNBWxH2x@cluster0.oxcpg.mongodb.net/newsletter?retryWrites=true&w=majority';
     const client = await MongoClient.connect(url);
     const db = client.db();
     await db.collection('emails').insertOne({ email: userEmail });
