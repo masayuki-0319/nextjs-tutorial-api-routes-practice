@@ -10,9 +10,9 @@ export const CommentList: VFC<Props> = (props) => {
 
   return (
     <ul className={classes.comments}>
-      {items.map((item) => {
+      {items.map((item, index) => {
         return (
-          <li key={item.id}>
+          <li key={index}>
             <p>{item.text}</p>
             <div>
               By <address>{item.name}</address>

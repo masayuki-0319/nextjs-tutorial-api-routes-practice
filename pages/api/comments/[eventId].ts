@@ -24,6 +24,7 @@ const handler = async (req: EventIdRequest, res: EventIdResponse) => {
 
   const url = 'mongodb+srv://onioni:ZkNmGsQnuNBWxH2x@cluster0.oxcpg.mongodb.net/events?retryWrites=true&w=majority';
   const client = await MongoClient.connect(url);
+  const db = client.db();
 
   switch (req.method) {
     case 'POST':
@@ -41,7 +42,6 @@ const handler = async (req: EventIdRequest, res: EventIdResponse) => {
         text,
       };
 
-      const db = client.db();
       const result = await db.collection('comments').insertOne(newComment);
 
       newComment.id = result.insertedId.toString();
@@ -50,12 +50,9 @@ const handler = async (req: EventIdRequest, res: EventIdResponse) => {
       res.status(201).json({ message: 'Added comment.', newComment });
       return;
     case 'GET':
-      const dummyList = [
-        { id: 'c1', name: 'Max', text: 'A first comment!' },
-        { id: 'c2', name: 'Manuel', text: 'A second comment!' },
-      ];
+      const documents = await db.collection('comments').find().sort({ _id: -1 }).toArray();
 
-      res.status(200).json({ comments: dummyList });
+      res.status(200).json({ comments: documents });
       return;
     default:
       res.status(400).json({ message: 'Invalid' });
