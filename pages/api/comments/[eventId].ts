@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { MongoClient } from 'mongodb';
+import { connectDatabase, insertDocument, getAllDocuments } from '../../../helpers/db-util';
 
 interface EventIdRequest extends NextApiRequest {
   query: {
@@ -22,16 +22,20 @@ const handler = async (req: EventIdRequest, res: EventIdResponse) => {
     return;
   }
 
-  const url = 'mongodb+srv://onioni:ZkNmGsQnuNBWxH2x@cluster0.oxcpg.mongodb.net/events?retryWrites=true&w=majority';
-  const client = await MongoClient.connect(url);
-  const db = client.db();
+  let client: any;
+  try {
+    client = await connectDatabase();
+  } catch (error) {
+    res.status(500).json({ message: 'Connecting to the database failed!' });
+    return;
+  }
 
   switch (req.method) {
     case 'POST':
       const { email, name, text } = req.body;
-
       if (!email?.includes('@') || !name || name.trim() === '' || !text || text.trim() === '') {
         res.status(422).json({ message: 'Invalid input.' });
+        client.close();
         return;
       }
 
@@ -42,24 +46,28 @@ const handler = async (req: EventIdRequest, res: EventIdResponse) => {
         text,
       };
 
-      const result = await db.collection('comments').insertOne(newComment);
+      let result;
+      try {
+        result = await insertDocument(client, 'events', newComment);
+        newComment._id = result.insertedId.toString();
 
-      newComment.id = result.insertedId.toString();
-      console.log(result);
-
-      res.status(201).json({ message: 'Added comment.', newComment });
-      return;
+        res.status(201).json({ message: 'Added comment.', newComment });
+      } catch (error) {
+        res.status(500).json({ message: 'Inserting data failed!', error: error });
+      }
     case 'GET':
-      const documents = await db.collection('comments').find().sort({ _id: -1 }).toArray();
+      let documents: any;
+      try {
+        documents = await getAllDocuments(client, 'comments', { _id: -1 });
 
-      res.status(200).json({ comments: documents });
-      return;
+        res.status(200).json({ comments: documents });
+      } catch (error) {
+        res.status(500).json({ message: 'Getting comments failed!' });
+      }
     default:
-      res.status(400).json({ message: 'Invalid' });
+      client.close();
       return;
   }
-
-  client.close();
 };
 
 export default handler;

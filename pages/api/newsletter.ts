@@ -1,18 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { MongoClient } from 'mongodb';
-
-const connectDatabase = async () => {
-  const url = 'mongodb+srv://onioni:ZkNmGsQnuNBWxH2x@cluster0.oxcpg.mongodb.net/newsletter?retryWrites=true&w=majority';
-  const client = await MongoClient.connect(url);
-
-  return client;
-};
-
-const insertDocument = async (client: MongoClient, document: Object) => {
-  const db = client.db();
-
-  await db.collection('emails').insertOne(document);
-};
+import { connectDatabase, insertDocument } from '../../helpers/db-util';
 
 interface NewsletterRequest extends NextApiRequest {
   body: {
@@ -39,7 +26,7 @@ const handler = async (req: NewsletterRequest, res: NextApiResponse) => {
     }
 
     try {
-      await insertDocument(client, { email: userEmail });
+      await insertDocument(client, 'newsletter', { email: userEmail });
       client.close();
     } catch (error) {
       res.status(500).json({ message: 'Inserting data failed!' });
