@@ -1,6 +1,19 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { MongoClient } from 'mongodb';
 
+const connectDatabase = async () => {
+  const url = 'mongodb+srv://onioni:ZkNmGsQnuNBWxH2x@cluster0.oxcpg.mongodb.net/newsletter?retryWrites=true&w=majority';
+  const client = await MongoClient.connect(url);
+
+  return client;
+};
+
+const insertDocument = async (client: MongoClient, document: Object) => {
+  const db = client.db();
+
+  await db.collection('emails').insertOne(document);
+};
+
 interface NewsletterRequest extends NextApiRequest {
   body: {
     email?: string;
@@ -17,14 +30,22 @@ const handler = async (req: NewsletterRequest, res: NextApiResponse) => {
       return;
     }
 
-    const url =
-      'mongodb+srv://onioni:ZkNmGsQnuNBWxH2x@cluster0.oxcpg.mongodb.net/newsletter?retryWrites=true&w=majority';
-    const client = await MongoClient.connect(url);
-    const db = client.db();
-    await db.collection('emails').insertOne({ email: userEmail });
-    client.close();
+    let client: any;
+    try {
+      client = await connectDatabase();
+    } catch (error) {
+      res.status(500).json({ message: 'Connecting to the database failed!' });
+      return;
+    }
 
-    console.log(userEmail);
+    try {
+      await insertDocument(client, { email: userEmail });
+      client.close();
+    } catch (error) {
+      res.status(500).json({ message: 'Inserting data failed!' });
+      return;
+    }
+
     res.status(201).json({ message: 'Signed up!' });
   }
 };
