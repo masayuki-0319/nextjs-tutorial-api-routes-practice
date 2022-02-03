@@ -18,7 +18,7 @@ const defaultNotification: NotificationType = {
   hideNotification: () => {},
 };
 
-const NotificationContext = createContext<NotificationType>(defaultNotification);
+export const NotificationContext = createContext<NotificationType>(defaultNotification);
 
 export const NotificationContextProvider = (props: { children: ReactNode }) => {
   const [activeNotification, setActiveNotification] = useState<null | Notification>(null);
