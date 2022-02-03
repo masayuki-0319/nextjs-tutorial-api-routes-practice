@@ -3,12 +3,12 @@ import Head from 'next/head';
 
 import { Layout } from '../components/layout/layout';
 import { Notification } from '../components/ui/notification';
-import { defaultNotification, NotificationContextProvider } from '../store/notification-context';
+import { NotificationContextProvider } from '../store/notification-context';
 import '../styles/globals.css';
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
-    <NotificationContextProvider value={defaultNotification}>
+    <NotificationContextProvider>
       <Layout>
         <Head>
           <title>NextJS Events</title>

@@ -1,20 +1,40 @@
-import React, { createContext, ProviderProps, ReactNode } from 'react';
+import React, { createContext, ProviderProps, ReactNode, useState } from 'react';
+
+type Notification = {
+  title: string;
+  message: string;
+  status: string;
+};
 
 type NotificationType = {
-  notification: Object | null;
+  notification: Notification | null;
   showNotification: Function;
   hideNotification: Function;
 };
 
-export const defaultNotification: NotificationType = {
+const defaultNotification: NotificationType = {
   notification: null,
-  showNotification: () => {},
+  showNotification: (notificationData: Notification) => {},
   hideNotification: () => {},
 };
 
 const NotificationContext = createContext<NotificationType>(defaultNotification);
 
-type Props = { value: NotificationType; children: ReactNode };
-export const NotificationContextProvider = (props: Props) => {
-  return <NotificationContext.Provider value={props.value}>{props.children}</NotificationContext.Provider>;
+export const NotificationContextProvider = (props: { children: ReactNode }) => {
+  const [activeNotification, setActiveNotification] = useState<null | Notification>(null);
+
+  const showNotificationHandler = (notificationData: Notification) => {
+    setActiveNotification(notificationData);
+  };
+  const hideNotificationHandler = () => {
+    setActiveNotification(null);
+  };
+
+  const context = {
+    notification: activeNotification,
+    showNotification: showNotificationHandler,
+    hideNotification: hideNotificationHandler,
+  };
+
+  return <NotificationContext.Provider value={context}>{props.children}</NotificationContext.Provider>;
 };
